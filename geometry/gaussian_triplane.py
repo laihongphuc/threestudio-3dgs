@@ -27,6 +27,7 @@ from threestudio.models.geometry.base import BaseGeometry
 from threestudio.utils.misc import C
 from threestudio.utils.typing import *
 from threestudio.utils.typing import DictConfig
+from threestudio.utils.ops import dot, get_activation
 
 from .gaussian_io import GaussianIO
 
@@ -457,6 +458,7 @@ class GaussianTriplane(BaseGeometry, GaussianIO):
         with torch.no_grad():
             scale = self.get_scaling[:, 0:1]
             opacity = 1 - torch.exp(-scale * density)
+            opacity = inverse_sigmoid(torch.clamp(opacity, min=self.cfg.opacity_init, max=0.95))
             self._opacity.copy_(opacity)
             self.opacities = opacity.cpu().clone().detach()
         
@@ -867,6 +869,8 @@ class GaussianTriplane(BaseGeometry, GaussianIO):
         output = other.forward(xyz, output_normal=False)
         del other
         density, color = output['density'], output['features']
+        color_activation = get_activation("sigmoid-mipnerf")
+        color = color_activation(color)
         xyz = xyz.detach().cpu()
         color = color.detach().cpu()
         pcd = BasicPointCloud(
