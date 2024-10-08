@@ -52,6 +52,15 @@ class GaussianSplatting(BaseLift3DSystem):
 
     def on_fit_start(self) -> None:
         super().on_fit_start()
+        decoder_type = self.cfg.geometry.get("decoder_type", None)
+        if decoder_type is not None:
+            self.geometry.cache_feature()
+
+    def on_fit_end(self) -> None:
+        super().on_fit_end()
+        decoder_type = self.cfg.geometry.get("decoder_type", None)
+        if decoder_type is not None:
+            self.geometry.clear_cache_feature()
 
     def training_step(self, batch, batch_idx):
         opt = self.optimizers()

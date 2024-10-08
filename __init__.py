@@ -14,7 +14,13 @@ else:
 
 
 from .background import gaussian_mvdream_background
-from .geometry import exporter, gaussian_base, gaussian_io, gaussian_triplane
+from .geometry import (
+    exporter, 
+    gaussian_base, 
+    gaussian_io, 
+    gaussian_triplane, 
+    gaussian_triplane_decoder
+)
 from .material import gaussian_material
 from .renderer import (
     diff_gaussian_rasterizer,
