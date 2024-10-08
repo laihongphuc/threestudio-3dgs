@@ -547,6 +547,10 @@ class GaussianTriplaneDecoder(BaseGeometry, GaussianIO):
                 "lr": C(training_args.rotation_lr, 0, 0),
                 "mlp": "rotation",
             },
+            {
+                "params": self.decoder.parameters(),
+                "lr": 0.1,
+            }
         ]
         if self.cfg.pred_normal:
             l.append(
@@ -686,8 +690,12 @@ class GaussianTriplaneDecoder(BaseGeometry, GaussianIO):
         return optimizable_tensors
 
     def prune_points(self, mask):
+        """
+        We update the number of point -> need to update the cached and feature
+        """
         valid_points_mask = ~mask
         optimizable_tensors = self._prune_optimizer(valid_points_mask)
+
 
         self._xyz = optimizable_tensors["xyz"]
         if self.cfg.pred_normal:
@@ -697,6 +705,9 @@ class GaussianTriplaneDecoder(BaseGeometry, GaussianIO):
 
         self.denom = self.denom[valid_points_mask]
         self.max_radii2D = self.max_radii2D[valid_points_mask]
+
+        self.clear_cache_feature()
+        self.cache_feature()
 
     def cat_tensors_to_optimizer(self, tensors_dict):
         optimizable_tensors = {}

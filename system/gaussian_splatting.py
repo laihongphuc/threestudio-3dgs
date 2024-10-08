@@ -63,6 +63,10 @@ class GaussianSplatting(BaseLift3DSystem):
             self.geometry.clear_cache_feature()
 
     def training_step(self, batch, batch_idx):
+        decoder_type = self.cfg.geometry.get("decoder_type", None)
+        if decoder_type is not None:
+            self.geometry.cache_feature()
+
         opt = self.optimizers()
         out = self(batch)
 
@@ -147,6 +151,8 @@ class GaussianSplatting(BaseLift3DSystem):
             loss.backward()
         opt.step()
         opt.zero_grad(set_to_none=True)
+        if decoder_type is not None:
+            self.geometry.clear_cache_feature()
 
         return {"loss": loss_sds}
 
